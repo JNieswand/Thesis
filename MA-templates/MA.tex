@@ -1,0 +1,127 @@
+%% Template for Master thesis
+%% ===========================
+%%
+%% You need at least KomaScript v3.0.0,
+%% e.g. available in Texlive 2009
+\documentclass  [
+  paper    = a4,
+  BCOR     = 10mm,
+  twoside,
+  fontsize = 12pt,
+  fleqn,
+  toc      = bibnumbered,
+  toc      = listofnumbered,
+  numbers  = noendperiod,
+  headings = normal,
+  listof   = leveldown,
+  version  = 3.03
+]                                       {scrreprt}
+
+% used pagages
+\usepackage     [utf8]                  {inputenc}
+\usepackage     [T1]                    {fontenc}
+\usepackage                             {color}
+\usepackage                             {amsmath}
+\usepackage                             {graphicx}
+\usepackage     [english]               {babel}
+\usepackage                             {natbib}
+\usepackage                             {hyperref}
+
+% links
+\definecolor{darkblue}{rgb}{0.0,0.0,0.4}
+\definecolor{darkgreen}{rgb}{0.0,0.4,0.0}
+\hypersetup{
+    colorlinks,
+    linkcolor=black,
+    citecolor=darkgreen,
+    urlcolor=darkblue
+}
+
+\begin{document}
+  %% title pages similar to providet template instead of maketitle
+  \include{titlepages-ger} % select either german
+  \include{titlepages-eng} % or english title page
+  \include{abstracts}
+
+  \tableofcontents
+  %% Put your contents here
+\chapter{Theory}
+\section{Depth from focus}
+\label{sec:theo depth}
+One advantage of using lightfields for depth measure is its ability to get a two-dimensional image of the scene at any depth. Integrating the views of the light field camera array has the same effect as the integration of a focussed lense camera, as the lense is simply integrating slightly different viewpoints of the same scene point when focussed on the correct depth. \\
+ Obtaining the refocussed integrated image is a synthetic process that only requires shifting the view coordinates artificially. Given a full four-dimensional light field $L(u, v, x, y)$ we can refocus the light field as described in \cite{ng2005}:\begin{equation}\label{eq:refocus}
+L'(u, v, x, y) = L(u(1-d'), v(1-d'), x, y),
+\end{equation}
+where $d'$ describes the relative pixel shift. The disparity is directly related to the absolute depth of the focus (relate to PICTURE) if the relevant camera parameters are  known. Given the baseline $b$ in meters and the focal length $f$ in pixels, the depth $Z$ is given as \begin{equation}\label{key}
+Z = \frac{f\cdot b}{d}.
+\end{equation} 
+We obtain
+\begin{equation}\label{key}
+\bar{L}(x,y) = \frac{1}{N_{u,v}}\int\int L'(u, v, x, y) du  dv =\frac{1}{N_{u,v}}\sum_{u}\sum_{v}  L'(u, v, x, y)
+\end{equation}
+Once we can focus at any range, one can adopt \textit{depth-from-focus}-techniques as described in \cite{watanabe1998rational} for depth measure. If the scene point at a given image coordinate $(x, y)$ in the center view is in focus, the contrast in the integrated image $\bar{L}(x,y)$ is high, thus a contrast measure at each pixel combined with stepwise refocussing yields a depth map. \\
+For measuring the contrast, one has different options: The most straight forward approach is calculating the first derivative of the grey-value image. At high contrast structure the local intensity changes are expected to be high. Alternatively one could measure the second derivative laplacian that eventually results in higher robustness. The implementation and tests of those techniques for the benchmark dataset can be found in section \ref{label}.\\
+Using a pinhole camera array allows us to go further and find a response value that shows higher consistency. Taking the absolute difference between the center view of the camera array and the refocussed image yields to promising results as shown in \cite{tao2017shape}. Under the assumption of lambertian surfaces the RGB- value of any scene point should be the same under all angles. Thus when refocussed on the correct depth, summing over all angles should result in a value that ideally is the same as in the center view alone. This is referred as \textit{photo consistency}; for more information read \cite{tao2017shape}.
+The response value at a given depth is obtained from
+\begin{equation}\label{key}
+D'(x,y) = \frac{1}{|W_D|}\sum_{x',y' \in W_D} \left|\bar{L}(x',y')- P(x', y')\right|,
+\end{equation}
+where $P(x,  y)$ is the center view. For more robustness, it is averaged over a small window. We refer to this measuring technique as \textit{photo consistency} in the following. Note that calculating the absolute results in a 1-channel-image while the input images are RGB-images. \\ Tao et al. propose another measure that they refer to as $angular correspondence$. It follows the same principle, but instead of integrating the refocussed lightfield followed by comparing it to the center view, they directly take the difference of each viewpoint to the center view and sum up those differences:
+\begin{equation}\label{eq:responsecorr}
+D'(x,y) = \frac{1}{N_{u,v}}\sum_{u}\sum_{v}  \left|L'(u, v, x, y) - P(x,y)\right|.
+\end{equation}
+We tested those methods against the common contrast measures mentioned above, the results are found in section results. \chapter{results}
+\section{Depth from focus}
+\label{sec: depth from focus}
+The depth measure using epipolar plane analysis requires iterative calculation of the structure tensor for each EPI at each disparity. A way to overcome this is to generate a preestimate of the depth before actually calculating the correct depth. This could also help to prevent possible errors due to periodic scene characteristics which can lead to mismatch errors when calculating the structure tensor. Therefore the depth pre-estimate should fulfil the following criteria:
+\begin{enumerate}
+	\item It should be \textit{consistent}, meaning that the number of pixels with low confidence should be the lowest possible.
+	\item It should result in a \textit{fast} measure, ideally faster then it would take to do the full iterative structure tensor algorithm.
+	\item It does not have to be too accurate, since it only serves as a pre-estimate. 
+\end{enumerate}
+
+The methods that are tested are described in section \ref{sec:theo depth}. We test four different ways to obtain a depth map using depth from focus:
+\begin{description}
+	\item[Photo consistency] This measure takes advantage of the fact that the difference between the refocussed two-dimensional image and the center view is close to zero when refocussed to  the correct depth. Response value:
+	\begin{equation}\label{key}
+	D'(x,y) = \frac{1}{|W_D|}\sum_{x',y' \in W_D} \left|\bar{L}(x',y')- P(x', y')\right|,
+	\end{equation}
+	\item[Angular correspondence] In contrast to the \textit{Photo consistency} - measure, it first calculates the absolute difference between each camera array view and the center view followed by the summation of those deviations. The response value is given as in equation \eqref{eq:responsecorr}
+	\begin{equation}\label{key}
+	D'(x,y) = \frac{1}{N_{u,v}}\sum_{u}\sum_{v}  \left|L'(u, v, x, y) - P(x,y)\right|
+	\end{equation}
+	
+	\item[First derivative] The first derivative is calculated for contrast measure by applying the sobel filter onto the refocussed image $I$:
+	\begin{equation}\label{key}
+	 G_x=
+	 \left[ {\begin{array}{ccc}
+	 	-1 & 0 & 1 \\
+	 	-2 & 0 & 2 \\
+	 	-1 & 0 & 1 \\
+	 	\end{array} } \right] \cdot I \quad G_y=
+	 \left[ {\begin{array}{ccc}
+	 	-1 &-2 &-1 \\
+	 	0 & 0 & 0 \\
+	 	1 & 0 & 1 \\
+	 	\end{array} } \right] \cdot I
+	\end{equation} 
+	The directional gradients are simply added up to the response value
+	\begin{equation}\label{key}
+	D'(x,y) = |G_x(x,y)| + |G_y(x,y)|
+	\end{equation}
+	\item[Laplace] Here we calculate the second derivative laplacian by appling the sobel operator twice:\begin{equation}\label{key}
+	D'(x,y) = \text{Laplace}(I)(x,y) = \frac{\partial^2 I}{\partial x^2}(x,y) + \frac{\partial^2 I}{\partial y^2}(x,y)
+	\end{equation}
+\end{description}
+
+  \part{Appendix}
+  \begin{appendix}
+    \chapter{Lists}
+    \listoffigures
+    \listoftables
+    \bibliography{references}{}
+    \citestyle{egu}
+    \bibliographystyle{plainnat}
+    \include{deposition}
+  \end{appendix}
+\end{document}
