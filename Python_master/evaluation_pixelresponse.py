@@ -32,7 +32,7 @@ class parameter():
         self.resolution_per_pixel = 10
     def labelToDisparity(self,i):
         return( (self.max_disp- self.min_disp)/(self.resolution_per_pixel * 
-               self.max_disp- self.min_disp)* i + self.min_disp)
+               self.max_disp- self.min_disp +1)* i + self.min_disp)
 p = parameter()
 xvalue = "200"
 yvalue = "200"

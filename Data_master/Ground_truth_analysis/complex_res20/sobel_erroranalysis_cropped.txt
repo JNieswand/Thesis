@@ -1,0 +1,27 @@
+###########################################
+######### DEPTH ERROR ANALYSIS ############
+###########################################
+minimum depth: 2.13515
+maximum depth: 3.78
+minimum gt: 2.31405
+maximum gt: 3.24401
+-------------------------------------------
+minimum absolut error: -1.10811m
+maximum absolut error: 1.46135m
+median absolut error: 0.0216196m
+mean squared error: 0.213506m
+standard deviation: 0.235672
+-------------------------------------------
+0.1-quantile absolut error: 0.00578403m
+0.9-quantile absolut error: 0.18736m
+0.25-quantile absolut error: 0.0118842m
+0.75-quantile absolut error: 0.0437238m
+-------------------------------------------
+minimum relative error: 3.76885e-005%
+maximum relative error: 63.0259%
+mean relative error: 3.11815%
+-------------------------------------------
+valid depth values at 100% of pixels
+###########################################
+###########################################
+###########################################
