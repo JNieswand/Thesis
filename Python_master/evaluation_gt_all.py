@@ -23,7 +23,7 @@ fig = pyplot.figure()
 
 ax = fig.add_subplot(gs[0, 0])
 
-resolution = 1
+resolution = 20
 path = 'C:/Users/jnieswand/Documents/Thesis/Data_master/Ground_truth_analysis/Resolution_'+str(resolution)+'/*/*/'
 files = glob.glob( os.path.join(path, '*erroranalysis_cropped*') )
 meansqu = np.array([])
@@ -53,7 +53,7 @@ for k,x in enumerate(scene_set):
     ax.bar(i , data, width = 0.35, label = x)
     labelpos = np.append(labelpos, i)
 
-plt.xticks(labelpos, tuple(tup) , rotation = 45, fontsize = 7)
+plt.xticks(labelpos, tuple(tup) , rotation = 45, fontsize = 7, ha="right")
 #red_patch = mpatches.Patch(color='red', label='The red data')
 #red_patch = mpatches.Patch(color='blue', label='The red data')
 #red_patch = mpatches.Patch(color='orange', label='The red data')
