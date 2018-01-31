@@ -49,7 +49,7 @@
 \section{Depth from focus}
 \label{sec:theo depth}
 One advantage of using lightfields for depth measure is its ability to get a two-dimensional image of the scene at any depth. Integrating the views of the light field camera array has the same effect as the integration of a focussed lense camera, as the lense is simply integrating slightly different viewpoints of the same scene point when focussed on the correct depth. \\
- Obtaining the refocussed integrated image is a synthetic process that only requires shifting the view coordinates artificially. Given a full four-dimensional light field $L(u, v, x, y)$ we can refocus the light field as described in \cite{ng2005}:\begin{equation}\label{eq:refocus}
+ Obtaining the refocussed integrated image is a synthetic process that only requires shifting the view coordinates artificially. Given a full four-dimensional light field $L(u, v, x, y)$ we can refocus the light field as described in \cite{ng2005light}:\begin{equation}\label{eq:refocus}
 L'(u, v, x, y) = L(u(1-d'), v(1-d'), x, y),
 \end{equation}
 where $d'$ describes the relative pixel shift. The disparity is directly related to the absolute depth of the focus (relate to PICTURE) if the relevant camera parameters are  known. Given the baseline $b$ in meters and the focal length $f$ in pixels, the depth $Z$ is given as \begin{equation}\label{key}
@@ -70,14 +70,41 @@ where $P(x,  y)$ is the center view. For more robustness, it is averaged over a 
 \begin{equation}\label{eq:responsecorr}
 D'(x,y) = \frac{1}{N_{u,v}}\sum_{u}\sum_{v}  \left|L'(u, v, x, y) - P(x,y)\right|.
 \end{equation}
-We tested those methods against the common contrast measures mentioned above, the results are found in section results. \chapter{results}
+We tested those methods against the common contrast measures mentioned above, the results are found in section results. 
+\section{Semi-Global Matching}
+\subsection{Semi - Global Matching for Stereo Vision}
+In contrast to Light field depth estimation techniques Stereo systems often suffer from mismatching pixels between the left and right images. Many attemps have been made to smoothen bad pixels, resulting in blurred edges or long calculation times. One promising attempt was published in 2005 by Heiko Hirschmüller (\cite{hirschmuller2005accurate}) that was described as \glqq a very good trade off between runtime and accuracy \grqq by himself (\cite{hirschmuller2011semi}): we speak of Semi-Global Matching.\\
+In general,  matching of two stereo images means shifting the disparity over the predefined disparity range and comparing both images until we have a cost value at each image point for each discrete disparity. We assign to each pixel $\vec{p}$ the disparity value $D_{\vec p}$ which resulted in the lowest cost $C(\vec{p}, D_{\vec p})$. This matching does not have to be unique, resulting in errorneous pixel disparities. 
+To overcome this one wants to minimize a global cost function of the form 
+\begin{equation}\label{eq:global_sgm}
+E(D) = \sum_{\vec p} \left(C(\vec{p}, D_{\vec p}) + \sum_{q\in N_p} 
+\begin{cases}
+	P1 & \text{ if }|D_{\vec p} - D_{\vec q}| = 1\\
+	P2 & \text{ if }|D_{\vec p} - D_{\vec q}| \geq 1\\
+	0 & \text{ else }
+	\end{cases}  
+\right).
+\end{equation}
+The fist term sums all matching costs over the whole image, while the second term forces continuity by comparing the disparity of all neighbour pixels $N_q$ to the disparity $D_p$; if a  small discontinuity is detected ($D_{\vec p} - D_{\vec q} = 1$), a small penalty is added to the global cost function. Since a small discontinuity can be found essentially at any tilted plane, only a small error is added. A bigger disparity difference indices a clear discontinuity in the disparity map. Note that the penalty $P2$ can be divided by the gradient of the original image to allow a disparity discontinuity when we find edges in the image; at these points we expect the disparity to be discontinuous.\\ However, minimizing the global cost function involves computational cumbersome algorithms as it is a NP-complete Problem (\cite{hirschmuller2011semi}). Semi-Global Matching however chooses another approach by minimizing the global cost function along one-dimensional lines -- this can indeed be calculated in polynomial time.
+The new smoothed cost function at pixel $\vec{p}$ is then given as the sum of all 1D minimum cost paths that are ending in $\vec{p}$.  The minimal cost $L'_r$ along the path $r$ is defined recursively as
+\begin{equation}\label{key}
+L'_r(\vec{p}, D) = C(\vec{p}, D) + \text {min}
+\begin{cases}
+	L'_r(\vec{p_\text{before}}, D) \\
+	L'_r(\vec{p_\text{before}}, D+1)+P1 \\
+	L'_r(\vec{p_\text{before}}, D-1)+P1 \\
+	\text{min}_i L'_r(\vec{p_\text{before}}, i)+P2 
+\end{cases}
+\end{equation} 
+By always adding the minimum path cost of the previous pixel on the scanline we are looking at, we solve equation \label{eq:global_sgm} in one dimension. Summing along at least 8 path directions (crosshair + diagonals) results in disparity maps with reduced error pixel while maintaining clean edges. Neither a blur filter, a median filter or a bilateral filter would preserve those features.
+\chapter{results}
 \section{Depth from focus}
 \label{sec: depth from focus}
 The depth measure using epipolar plane analysis requires iterative calculation of the structure tensor for each EPI at each disparity. A way to overcome this is to generate a preestimate of the depth before actually calculating the correct depth. This could also help to prevent possible errors due to periodic scene characteristics which can lead to mismatch errors when calculating the structure tensor. Therefore the depth pre-estimate should fulfil the following criteria:
 \begin{enumerate}
 	\item It should be \textit{consistent}, meaning that the number of pixels with low confidence should be the lowest possible.
 	\item It should result in a \textit{fast} measure, ideally faster then it would take to do the full iterative structure tensor algorithm.
-	\item It does not have to be too accurate, since it only serves as a pre-estimate. 
+	\item It does not have to be subpixel accurate, since it only serves as a pre-estimate. 
 \end{enumerate}
 
 The methods that are tested are described in section \ref{sec:theo depth}. We test four different ways to obtain a depth map using depth from focus:

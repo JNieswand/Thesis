@@ -1,9 +1,27 @@
-\begin{thebibliography}{2}
+\begin{thebibliography}{5}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
   \providecommand{\doi}[1]{doi: #1}\else
   \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Hirschmuller(2005)]{hirschmuller2005accurate}
+Heiko Hirschmuller.
+\newblock Accurate and efficient stereo processing by semi-global matching and
+  mutual information.
+\newblock In \emph{Computer Vision and Pattern Recognition, 2005. CVPR 2005.
+  IEEE Computer Society Conference on}, volume~2, pages 807--814. IEEE, 2005.
+
+\bibitem[Hirschm{\"u}ller(2011)]{hirschmuller2011semi}
+Heiko Hirschm{\"u}ller.
+\newblock Semi-global matching-motivation, developments and applications.
+\newblock \emph{Photogrammetric Week 11}, pages 173--184, 2011.
+
+\bibitem[Ng et~al.()Ng, Levoy, Br{\'e}dif, Duval, Horowitz, and
+  Hanrahan]{ng2005light}
+Ren Ng, Marc Levoy, Mathieu Br{\'e}dif, Gene Duval, Mark Horowitz, and Pat
+  Hanrahan.
+\newblock Light field photography with a hand-held plenoptic camera.
 
 \bibitem[Tao et~al.(2017)Tao, Srinivasan, Hadap, Rusinkiewicz, Malik, and
   Ramamoorthi]{tao2017shape}
